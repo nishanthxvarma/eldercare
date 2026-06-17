@@ -4,18 +4,20 @@ import apiClient from '../../api/client';
 import { HeartPulse, Utensils, FileText, Pill, ChevronDown, CheckCircle, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useAuth } from '../../contexts/AuthContext';
 
 type TaskType = 'vitals' | 'meal' | 'note' | 'medication';
 
 const CaretakerTasks = () => {
+  const { user } = useAuth();
   const [activeTask, setActiveTask] = useState<TaskType>('vitals');
   const [selectedResident, setSelectedResident] = useState('');
   const queryClient = useQueryClient();
 
   const { data: residentsData } = useQuery({
-    queryKey: ['caretaker-residents'],
+    queryKey: ['caretaker-residents', user?.id],
     queryFn: async () => {
-      const res = await apiClient.get('/residents?limit=100');
+      const res = await apiClient.get(`/residents?limit=100&caretakerId=${user?.id}`);
       return res.data.data?.residents || [];
     }
   });
@@ -277,10 +279,36 @@ const CaretakerTasks = () => {
         )}
 
         {selectedResident && activeTask === 'medication' && (
-          <form onSubmit={medForm.handleSubmit((d) => medMutation.mutate(d))} className="space-y-5">
-            <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-              <Pill className="w-5 h-5 text-indigo-500" /> Medication Administration
-            </h2>
+          <div className="space-y-6">
+            <div className="bg-indigo-50/20 p-4 rounded-xl border border-indigo-100/50 space-y-3">
+              <h3 className="font-semibold text-indigo-900 text-sm flex items-center gap-1.5">
+                <Pill className="w-4 h-4 text-indigo-600" /> Scheduled Medications & Timings
+              </h3>
+              {medications && medications.length > 0 ? (
+                <div className="grid grid-cols-1 gap-2.5">
+                  {medications.map((med: any) => (
+                    <div key={med._id} className="p-3 bg-white rounded-lg border border-slate-100 flex justify-between items-center text-xs shadow-sm">
+                      <div>
+                        <p className="font-bold text-slate-900 text-sm">{med.name} <span className="font-normal text-slate-500">({med.dosage})</span></p>
+                        <p className="text-slate-500 mt-0.5">Timing: <span className="font-medium text-slate-700">{med.frequency?.replace('_', ' ')}</span></p>
+                        {med.instructions && <p className="text-indigo-600 font-medium italic mt-0.5">"{med.instructions}"</p>}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-slate-400">Prescribed by:</p>
+                        <p className="font-semibold text-slate-700">{med.prescribedBy || 'Dr. Eleanor Smith'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">No active medications scheduled for this resident.</p>
+              )}
+            </div>
+
+            <form onSubmit={medForm.handleSubmit((d) => medMutation.mutate(d))} className="space-y-5">
+              <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-indigo-500" /> Log Medication Administration
+              </h2>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Medication *</label>
               <select {...medForm.register('medicationId', { required: true })} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -311,7 +339,8 @@ const CaretakerTasks = () => {
               {medMutation.isPending ? 'Saving...' : 'Log Administration'}
             </button>
           </form>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

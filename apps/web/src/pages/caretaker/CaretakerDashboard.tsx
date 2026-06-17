@@ -17,9 +17,9 @@ const CaretakerDashboard = () => {
   });
 
   const { data: residentsData } = useQuery({
-    queryKey: ['caretaker-residents'],
+    queryKey: ['caretaker-residents', user?.id],
     queryFn: async () => {
-      const res = await apiClient.get('/residents?limit=20');
+      const res = await apiClient.get(`/residents?limit=20&caretakerId=${user?.id}`);
       return res.data.data?.residents || [];
     }
   });

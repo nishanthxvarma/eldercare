@@ -17,12 +17,12 @@ VITE_SOCKET_URL=http://localhost:5000
 ```env
 PORT=5000
 NODE_ENV=production
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/eldercare?retryWrites=true&w=majority
-JWT_SECRET=your_super_secret_jwt_key
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_SECRET=your_super_secret_refresh_key
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/eldercare?retryWrites=true&w=majority
+JWT_ACCESS_SECRET=your_super_secret_jwt_access_key
+JWT_REFRESH_SECRET=your_super_secret_jwt_refresh_key
+JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
-CORS_ORIGIN=https://your-frontend-domain.vercel.app
+FRONTEND_URL=https://your-frontend-domain.vercel.app
 ```
 
 ---
